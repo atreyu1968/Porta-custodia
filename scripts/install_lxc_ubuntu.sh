@@ -19,6 +19,7 @@ if [[ "$BIND" != '127.0.0.1' ]]; then
   echo "ATENCIÓN: escucha en $BIND. Proteja el puerto con firewall para que solo el túnel/proxy autorizado pueda llegar a él."
 fi
 export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
 apt-get update -qq
 apt-get install -y -qq python3 python3-venv python3-pip fonts-dejavu-core ca-certificates libzbar0 >/dev/null
 if ! id portacustodia >/dev/null 2>&1; then
@@ -26,7 +27,9 @@ if ! id portacustodia >/dev/null 2>&1; then
 fi
 install -d -m 0750 -o root -g portacustodia "$APP_DIR"
 install -d -m 0700 -o portacustodia -g portacustodia "$DATA_DIR" "$DATA_DIR/private_documents" "$BACKUP_DIR"
-install -d -m 0700 -o root -g root "$ENV_DIR"
+install -d -m 0750 -o root -g portacustodia "$ENV_DIR"
+chmod 0750 "$ENV_DIR"
+chown root:portacustodia "$ENV_DIR"
 tar -C "$SOURCE_DIR" --exclude='__pycache__' --exclude='.pytest_cache' --exclude='*.pyc' --exclude='.git' --exclude='.venv' --exclude='.env' --exclude='data' --exclude='backups' --exclude='tests' -cf - . | tar -C "$APP_DIR" -xf -
 chown -R root:portacustodia "$APP_DIR"
 find "$APP_DIR" -type d -exec chmod 0750 {} +
@@ -64,8 +67,13 @@ PORTACUSTODIA_REQUIRE_LEGAL_CONFIG=1
 # PORTACUSTODIA_PRIVACIDAD_URL="https://url-institucional-informacion-privacidad"
 # PORTACUSTODIA_RETENCION="Plazo o criterio aprobado por el responsable"
 EOF
-  chmod 0600 "$ENV_DIR/environment"
+  chmod 0640 "$ENV_DIR/environment"
 fi
+# El servicio debe leer el fichero de variables, pero el resto del sistema no.
+chown root:portacustodia "$ENV_DIR/environment"
+chmod 0640 "$ENV_DIR/environment"
+# Prueba integral con un expediente ficticio como usuario restringido y cifrado REAL.
+(cd "$APP_DIR" && runuser -u portacustodia -- env PORTACUSTODIA_KEY_FILE="$KEY_FILE" PORTACUSTODIA_REQUIRE_LEGAL_CONFIG=0 PORTACUSTODIA_REQUIRE_ENCRYPTION=1 PYTHONDONTWRITEBYTECODE=1 "$APP_DIR/.venv/bin/python" -m scripts.selfcheck)
 # Upgrade v0.1 without replacing configured environment secrets.
 if ! grep -q '^PORTACUSTODIA_KEY_FILE=' "$ENV_DIR/environment";then
   printf '\nPORTACUSTODIA_KEY_FILE=%s\n' "$KEY_FILE" >> "$ENV_DIR/environment"
@@ -159,12 +167,50 @@ EOF
 systemctl daemon-reload
 systemctl enable portacustodia.service >/dev/null
 systemctl restart portacustodia.service
+# Alta completamente desatendida en una base vacía; nunca se reescribe un administrador existente.
+if ! test -f /root/portacustodia-initial-credentials.txt; then
+  # No se incluyen contraseñas predefinidas ni en el repositorio ni en comandos de procesos.
+  if ! runuser -u portacustodia -- env PORTACUSTODIA_DATA="$DATA_DIR" "$APP_DIR/.venv/bin/python" -c 'import sqlite3; from pathlib import Path; p=Path("/var/lib/portacustodia/portacustodia.sqlite3"); print(sqlite3.connect(p).execute("SELECT COUNT(*) FROM users").fetchone()[0])' | grep -qx 0; then
+    echo 'Hay usuarios existentes; no se genera un nuevo administrador.'
+  else
+    CREDENTIAL_FILE=/root/portacustodia-initial-credentials.txt
+    UMASK_OLD="$(umask)"; umask 077
+    "$APP_DIR/.venv/bin/python" - <<'PYCREDS' > "$CREDENTIAL_FILE"
+import secrets
+print('PORTACUSTODIA - ACCESO INICIAL (USO INTERNO DE SECRETARÍA)')
+print('Usuario: administrador')
+print('Contraseña temporal: '+secrets.token_urlsafe(24))
+print('Cambie la contraseña al primer acceso; custodie o destruya este documento.')
+PYCREDS
+    umask "$UMASK_OLD"
+    PASS="$(sed -n 's/^Contraseña temporal: //p' "$CREDENTIAL_FILE")"
+    printf '%s\n' "$PASS" | runuser -u portacustodia -- env PORTACUSTODIA_DATA="$DATA_DIR" "$APP_DIR/.venv/bin/python" "$APP_DIR/manage.py" create-admin --username administrador --password-stdin
+    unset PASS
+    chmod 0600 "$CREDENTIAL_FILE"
+  fi
+fi
+# Comprobación interna por loopback o dirección IP configurada: falla si el servicio no funciona.
+PC_CHECK_HOST="$BIND" PC_CHECK_PORT="$PORT" "$APP_DIR/.venv/bin/python" - <<'PYHEALTH'
+import os,time,urllib.request,json
+host=os.environ['PC_CHECK_HOST'];port=os.environ['PC_CHECK_PORT']
+url=f'http://{host}:{port}/salud'
+for attempt in range(20):
+    try:
+        with urllib.request.urlopen(url,timeout=3) as r:
+            data=json.loads(r.read())
+        if data.get('estado')=='ok':
+            print('SALUD OK: '+url)
+            break
+    except Exception:time.sleep(1)
+else:raise SystemExit('ERROR: servicio sin respuesta; journalctl -u portacustodia -n 100')
+PYHEALTH
+runuser -u portacustodia -- env PORTACUSTODIA_DATA="$DATA_DIR" "$APP_DIR/.venv/bin/python" "$APP_DIR/manage.py" check-audit
 systemctl enable --now portacustodia-backup.timer
 systemctl enable --now portacustodia-followup.timer
 printf '\nINSTALACIÓN COMPLETADA EN LXC\n' 
 printf 'Aplicación (origen del proxy): http://%s:%s\n' "$BIND" "$PORT"
 printf 'Estado: systemctl status portacustodia\n'
 printf 'Registro: journalctl -u portacustodia -f\n'
-printf 'Crea el administrador INICIAL (desde el mismo contenedor):\n'
-printf ' cd %s && runuser -u portacustodia -- env PORTACUSTODIA_DATA=%s %s/.venv/bin/python manage.py create-admin\n' "$APP_DIR" "$DATA_DIR" "$APP_DIR"
+printf 'Credenciales iniciales (SOLO root): /root/portacustodia-initial-credentials.txt\n'
+printf 'Si existen usuarios previos, el instalador no los modifica.\n'
 printf '\nAcceso al usuario final solo por HTTPS en proxy/túnel institucional; nunca exponga el origen a internet.\n'

@@ -29,3 +29,14 @@
 - 21 pruebas automatizadas (ciclo de préstamo, menores, cifrado, copia, avisos, duplicados, retención documental y privacidad parametrizada).
 
 **Limitaciones:** No hay envío real de correo, firma electrónica, sello de tiempo cualificado, reconocimiento de firma manuscrita, homologación archivística ni instalación ya efectuada en servidores del centro. El asesoramiento y aprobación institucional siguen siendo imprescindibles.
+
+## 0.4.1 — Instalación Ubuntu vacía y manual ilustrado
+
+- Nuevo bootstrap HTTPS para Ubuntu LXC sin curl, wget ni git, basado en Python estándar y APT.
+- Corrección de permisos del directorio de clave y fichero de entorno para el servicio restringido.
+- Provisionamiento desatendido del administrador con contraseña aleatoria y cambio obligatorio.
+- Prueba aislada de flujo real con datos ficticios, generación de contrato PDF, acceso PWA y cifrado.
+- Comprobación correcta de `/salud`, servicio systemd y auditoría tras la instalación.
+- README completamente documentado y manual PDF ilustrado con páginas reales de prueba.
+
+**Instalación en entorno real pendiente de pilotaje:** no presupone dominio ni proxy HTTPS configurados.

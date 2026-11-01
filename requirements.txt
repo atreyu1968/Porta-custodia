@@ -8,3 +8,4 @@ cryptography>=43,<48
 pypdf>=5,<7
 Pillow>=11,<13
 pyzbar>=0.1.9,<1
+httpx>=0.27,<1

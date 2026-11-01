@@ -1,6 +1,7 @@
 """Initial administration user provisioning (never a hard-coded default account)."""
 import argparse
 import getpass
+import sys
 import re
 from app.database import initialize,db
 from app.main import PH, audit, utcnow
@@ -13,13 +14,14 @@ p.add_argument('action',choices=['create-admin','check-audit'])
 p.add_argument('--username',default='administrador')
 p.add_argument('--name',default='Administrador/a del centro')
 p.add_argument('--email',default='',help='Correo institucional del administrador (@canariaseducacion.es)')
+p.add_argument('--password-stdin',action='store_true',help='Leer contraseña inicial de stdin sin mostrarla; automatización solo en instalación')
 args=p.parse_args()
 path=Path(os.environ.get('PORTACUSTODIA_DATA','./data')).resolve()/'portacustodia.sqlite3'
 initialize(path)
 if args.action=='create-admin':
     if not re.fullmatch(r'[a-z0-9._-]{3,100}',args.username):raise SystemExit('Usuario no válido.')
     if args.email and not valid_staff_email(args.email):raise SystemExit('Utilice un correo @canariaseducacion.es válido.')
-    password=getpass.getpass('Contraseña inicial (mínimo 12 caracteres): ')
+    password=(sys.stdin.readline().rstrip('\r\n') if args.password_stdin else getpass.getpass('Contraseña inicial (mínimo 12 caracteres): '))
     if len(password)<12:raise SystemExit('Contraseña demasiado corta.')
     with db(path,write=True) as c:
         existing=c.execute('SELECT COUNT(*) FROM users').fetchone()[0]
