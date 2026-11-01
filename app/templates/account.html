@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}Mi contraseña{% endblock %}{% block content %}
+<div class="heading"><div><span class="eyebrow">CUENTA PERSONAL</span><h1>Seguridad de acceso</h1><p>La contraseña es individual y no debe compartirse.</p></div></div>
+<section class="panel narrow"><h2>Actualizar contraseña</h2>{% if user.must_change %}<div class="alert danger">Debes sustituir la clave temporal para acceder al sistema.</div>{% endif %}
+<form method="post" action="/mi-clave" class="stack"><input type="hidden" name="csrf" value="{{user.csrf}}"><label>Contraseña actual<input name="current" type="password" required autocomplete="current-password"></label><label>Nueva contraseña (mínimo 12 caracteres)<input name="new" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label><button class="btn primary">Guardar nueva contraseña</button></form></section>
+{% endblock %}

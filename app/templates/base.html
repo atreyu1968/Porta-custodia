@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}PortaCustodia{% endblock %} · IES Manuel Martín González</title>
+<link rel="stylesheet" href="/static/styles.css">
+{% if user %}<meta name="pc-csrf" content="{{user.csrf}}">{% endif %}
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#123550">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PortaCustodia">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<script src="/static/mobile.js" defer></script>
+</head>
+<body>
+{% if user %}
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="/panel"><div class="logo-mark">PC</div><div><strong>PortaCustodia</strong><span>IES Manuel Martín González</span></div></a>
+    <div class="nav-label">GESTIÓN</div>
+    <nav aria-label="Menú principal">
+      <a href="/movil" class="nav-link">▧ <span>Aplicación móvil</span></a>
+      <a href="/panel" class="nav-link">▦ <span>Panel de control</span></a>
+      <a href="/prestamos" class="nav-link">▤ <span>Préstamos y expedientes</span></a>
+      <a href="/equipos" class="nav-link">▣ <span>Inventario de equipos</span></a>
+      {% if user.role in ('admin','secretaria','consulta','gestor') %}<a href="/agenda" class="nav-link">◷ <span>Agenda de devoluciones</span></a>{% endif %}
+      {% if user.role in ('admin','secretaria','consulta') %}<a href="/alumnos" class="nav-link">♧ <span>Alumnado</span></a>{% endif %}
+      {% if user.role in ('admin','secretaria','consulta') %}<a href="/informes/pendientes.csv" class="nav-link">⇩ <span>Informe de pendientes</span></a>{% endif %}
+    </nav>
+    {% if user.role == 'admin' %}
+      <div class="nav-label">ADMINISTRACIÓN</div><nav><a href="/usuarios" class="nav-link">◉ <span>Usuarios y permisos</span></a><a href="/auditoria" class="nav-link">◎ <span>Registro de auditoría</span></a></nav>
+    {% endif %}
+    <div class="sidebar-footer"><span class="small-label">SESIÓN INICIADA</span><strong>{{ user.full_name }}</strong><span>{{ user.role|upper }}{% if user.role in ('tutor','gestor') %} · {{user.tutor_group}}{% endif %}</span>
+      <a href="/mi-clave" class="subtle-action">Cambiar contraseña</a>
+      <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{user.csrf}}"><button class="subtle-action logout" type="submit">Cerrar sesión ↗</button></form>
+    </div>
+  </aside>
+  <main class="content"><div class="page-shell">
+    {% if ok %}<div class="alert success" role="status">✓ {{ok}}</div>{% endif %}
+    {% if error %}<div class="alert danger" role="alert">⚠ {{error}}</div>{% endif %}
+    {% block content %}{% endblock %}
+    <footer class="footnote">PortaCustodia · Uso interno del centro · Datos personales de acceso restringido · Zona horaria: Canarias</footer>
+  </div></main>
+</div>
+{% else %}
+{% block public %}{% endblock %}
+{% endif %}
+</body>
+</html>

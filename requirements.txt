@@ -1,0 +1,10 @@
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+jinja2>=3.1,<4
+python-multipart>=0.0.9,<1
+argon2-cffi>=23,<26
+reportlab>=4.2,<5
+cryptography>=43,<48
+pypdf>=5,<7
+Pillow>=11,<13
+pyzbar>=0.1.9,<1

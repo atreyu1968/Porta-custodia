@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Acceso{% endblock %}
+{% block public %}
+<div class="login-wrap"><section class="login-brand"><div class="logo-mark large">PC</div><div class="eyebrow">GESTIÓN SEGURA DE EQUIPOS EDUCATIVOS</div><h1>Préstamos controlados.<br>Documentación bajo custodia.</h1><p>Inventario, entrega, devolución y trazabilidad documental en un mismo lugar.</p><div class="login-school">IES MANUEL MARTÍN GONZÁLEZ<br><small>Departamento de Administración y Gestión</small></div></section>
+<section class="login-panel"><div class="login-card"><div class="overline">ÁREA PRIVADA</div><h2>Iniciar sesión</h2><p>Acceso exclusivo al personal autorizado del centro.</p>
+{% if error %}<div class="alert danger">{{error}}</div>{% endif %}{% if ok %}<div class="alert success">{{ok}}</div>{% endif %}
+<form method="post" action="/login"><label>Usuario<input name="username" required autocomplete="username" placeholder="usuario.centro" autofocus></label><label>Contraseña<input name="password" type="password" required autocomplete="current-password" placeholder="••••••••••••"></label><button class="btn primary full" type="submit">Acceder al sistema →</button></form><p class="helper">Si no dispone de cuenta, solicítela a la administración de la aplicación. No existe usuario de demostración.</p></div></section></div>
+{% endblock %}
