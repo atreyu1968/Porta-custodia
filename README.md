@@ -69,7 +69,7 @@ python3 -c 'import urllib.request; urllib.request.urlretrieve("https://raw.githu
 bash /root/portacustodia-bootstrap.sh
 ```
 
-**¿Qué hace?** Usa exclusivamente Python estándar y conexiones HTTPS verificadas para descargar de GitHub el código de la rama `main` (sin Git), comprueba la estructura del archivo, instala dependencias de Ubuntu, crea usuario y directorios de servicio, entorno Python privado, clave de custodia, base de datos, administrador inicial con contraseña aleatoria, servicio `systemd`, temporizadores de copias y de seguimiento. Ejecuta una **prueba funcional sobre una base temporal ficticia** y comprueba `/salud` y la integridad de auditoría. Si falla una comprobación crítica, el instalador termina con error en vez de anunciar éxito.
+**¿Qué hace?** Usa exclusivamente Python estándar y conexiones HTTPS verificadas para descargar de GitHub el código de la rama `main` (sin Git), comprueba la estructura del archivo, instala dependencias de Ubuntu, crea grupo y usuario restringidos y directorios de servicio, entorno Python privado, clave de custodia, base de datos, administrador inicial con contraseña aleatoria, servicio `systemd`, temporizadores de copias y de seguimiento. Ejecuta una **prueba funcional sobre una base temporal ficticia** y comprueba `/salud` y la integridad de auditoría. Si falla una comprobación crítica, el instalador termina con error en vez de anunciar éxito.
 
 > **Precaución de suministro de software:** el comando descarga y ejecuta código del repositorio indicado, que puede cambiar con la rama `main`. Para producción, la organización deberá revisar el código, fijar una revisión/tag y verificar su huella antes de ejecutar instalaciones automatizadas.
 

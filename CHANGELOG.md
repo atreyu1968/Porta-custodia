@@ -40,3 +40,5 @@
 - README completamente documentado y manual PDF ilustrado con páginas reales de prueba.
 
 **Instalación en entorno real pendiente de pilotaje:** no presupone dominio ni proxy HTTPS configurados.
+
+- Corrección adicional: creación explícita de grupo de servicio en Ubuntu minimal.

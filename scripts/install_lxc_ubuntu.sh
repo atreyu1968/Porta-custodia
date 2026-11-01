@@ -22,8 +22,14 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 apt-get update -qq
 apt-get install -y -qq python3 python3-venv python3-pip fonts-dejavu-core ca-certificates libzbar0 >/dev/null
+# En Ubuntu minimal useradd --system NO garantiza grupo privado: crearlo explícitamente.
+if ! getent group portacustodia >/dev/null 2>&1; then
+  groupadd --system portacustodia
+fi
 if ! id portacustodia >/dev/null 2>&1; then
-  useradd --system --home-dir "$DATA_DIR" --shell /usr/sbin/nologin portacustodia
+  useradd --system --gid portacustodia --home-dir "$DATA_DIR" --shell /usr/sbin/nologin portacustodia
+else
+  usermod --gid portacustodia portacustodia
 fi
 install -d -m 0750 -o root -g portacustodia "$APP_DIR"
 install -d -m 0700 -o portacustodia -g portacustodia "$DATA_DIR" "$DATA_DIR/private_documents" "$BACKUP_DIR"
