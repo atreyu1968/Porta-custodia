@@ -79,7 +79,7 @@ fi
 chown root:portacustodia "$ENV_DIR/environment"
 chmod 0640 "$ENV_DIR/environment"
 # Prueba integral con un expediente ficticio como usuario restringido y cifrado REAL.
-(cd "$APP_DIR" && runuser -u portacustodia -- env PORTACUSTODIA_KEY_FILE="$KEY_FILE" PORTACUSTODIA_REQUIRE_LEGAL_CONFIG=0 PORTACUSTODIA_REQUIRE_ENCRYPTION=1 PYTHONDONTWRITEBYTECODE=1 "$APP_DIR/.venv/bin/python" -m scripts.selfcheck)
+(cd "$APP_DIR" && runuser -u portacustodia -- env PORTACUSTODIA_DATA="$DATA_DIR" PORTACUSTODIA_KEY_FILE="$KEY_FILE" PORTACUSTODIA_REQUIRE_LEGAL_CONFIG=0 PORTACUSTODIA_REQUIRE_ENCRYPTION=1 PYTHONDONTWRITEBYTECODE=1 "$APP_DIR/.venv/bin/python" -m scripts.selfcheck)
 # Upgrade v0.1 without replacing configured environment secrets.
 if ! grep -q '^PORTACUSTODIA_KEY_FILE=' "$ENV_DIR/environment";then
   printf '\nPORTACUSTODIA_KEY_FILE=%s\n' "$KEY_FILE" >> "$ENV_DIR/environment"

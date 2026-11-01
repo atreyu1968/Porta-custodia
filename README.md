@@ -128,6 +128,7 @@ Para repetir una prueba funcional sin alterar datos reales:
 ```bash
 cd /opt/portacustodia
 runuser -u portacustodia -- env \
+  PORTACUSTODIA_DATA=/var/lib/portacustodia \
   PORTACUSTODIA_KEY_FILE=/etc/portacustodia/document.key \
   PORTACUSTODIA_REQUIRE_ENCRYPTION=1 \
   /opt/portacustodia/.venv/bin/python -m scripts.selfcheck

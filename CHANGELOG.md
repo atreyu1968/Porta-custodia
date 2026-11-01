@@ -42,3 +42,4 @@
 **Instalación en entorno real pendiente de pilotaje:** no presupone dominio ni proxy HTTPS configurados.
 
 - Corrección adicional: creación explícita de grupo de servicio en Ubuntu minimal.
+- Corrección de autodiagnóstico: se especifica el directorio persistente de datos antes de importar FastAPI en un directorio de código de solo lectura.
